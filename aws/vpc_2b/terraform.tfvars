@@ -1,0 +1,13 @@
+// Update variables below according to your needs
+aws_region = "us-east-2"
+aws_az = "us-east-2a"
+aws_key_name = "mtecer"
+instance_type = "t2.micro"
+instance_name = "terra"
+vpc_cidr = "10.10.0.0/16"
+public_cidr = "10.10.1.0/24"
+private_cidr = "10.10.2.0/24"
+server_port = "80"
+count = "1"
+root_volume_size = "10"
+volume_delete_on_termination = "true"
