@@ -4,3 +4,12 @@ InstanceShape     = "VM.Standard1.2"
 InstanceOS        = "CentOS"
 InstanceOSVersion = "6.8"
 BootStrapFile     = "./userdata/pxb-bootstrap.sh"
+
+ilo_pce_fqdn      = "pce-oa.netsuite.com"
+ilo_venrepo_fqdn  = "venrepo-oa.netsuite.com"
+ilo_package       = "illumio-pce-16.9.4-1104.x86_64.rpm"
+ilo_admin_user    = "admin@netsuite.com"
+ilo_admin_name    = "Administrator"
+ilo_password      = "CH@ngeM3"
+ilo_organization  = "NetSuite"
+

@@ -1,0 +1,268 @@
+---
+- hosts: all
+  become: true
+  become_user: root
+  vars_files:
+    - external_variables.yaml
+  tasks:
+#    - name: Gather facts from all servers
+#      setup:
+#      delegate_to: "{{ item }}"
+#      delegate_facts: true
+#      with_items:
+#        - "{{groups['all']}}"
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+    - name: Disable IPTables
+      service:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      with_items:
+        - iptables
+        - ip6tables
+    - name: Install NTP package
+      package:
+        name:   "{{ item }}"
+        state:  present
+      with_items:
+        - ntp
+        - ntpdate
+    - name: Enable NTP service
+      service:
+        name: ntpd
+        state: running
+        enabled: yes
+    - name: Create custom fact directory
+      file:
+        path: /etc/ansible/facts.d
+        state: directory
+        recurse: yes
+    - name: Create custom facts
+      copy:
+        src: custom.fact
+        dest: /etc/ansible/facts.d/custom.fact
+        owner: root
+        group: root
+        mode: 0755
+    - name: Re-run setup to use custom facts
+      setup: ~
+    - name: Update /etc/hosts file
+      template:
+        src: etc_hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: 0644
+    - name: Update /etc/sysconfig/network file
+      template:
+        src: etc_sysconfig_network.j2
+        dest: /etc/sysconfig/network
+        owner: root
+        group: root
+        mode: 0644
+
+- hosts: haproxy
+  become: true
+  become_user: root
+  vars_files:
+    - external_variables.yaml
+  tasks:
+    - name: Install HAProxy
+      package:
+        name:   "{{ item }}"
+        state:  present
+      with_items:
+        - haproxy
+        - wget
+    - name: Configure HAProxy
+      template:
+        src: haproxy_cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart HAProxy service
+    - name: Enable HAProxy service
+      service:
+        name: haproxy
+        state: running
+        enabled: yes
+  handlers:
+    - name: Restart HAProxy service
+      service:
+        name: haproxy
+        state: restarted
+
+- hosts: pxb
+  become: true
+  become_user: root
+  vars_files:
+    - external_variables.yaml
+  tasks:
+    - name: Install Apache
+      package:
+        name:   "{{ item }}"
+        state:  present
+      with_items:
+        - httpd
+        - mod_ssl
+    - name: Copy TLS certs for venrepo
+      copy:
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - { src: 'tls/venrepo-oa.netsuite.com.bundle', dest: '/etc/pki/tls/certs/venrepo-oa.netsuite.com.bundle' }
+        - { src: 'tls/venrepo-oa.netsuite.com.key', dest: '/etc/pki/tls/private/venrepo-oa.netsuite.com.key' }
+        - { src: 'tls/IntermediateCA.crt', dest: '/etc/pki/tls/certs/IntermediateCA.crt' }
+      notify: Restart Apache service
+    - name: Configure Apache
+      template:
+        src: venrepo_conf.j2
+        dest: /etc/httpd/conf.d/venrepo.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart Apache service
+    - name: Enable Apache service
+      service:
+        name: httpd
+        state: running
+        enabled: yes
+  handlers:
+    - name: Restart Apache service
+      service:
+        name: httpd
+        state: restarted
+
+- hosts: core
+  become: true
+  become_user: root
+  vars:
+    ilo_node_type: core
+  vars_files:
+    - external_variables.yaml
+  tasks:
+    - name: Install Illumio package
+      package:
+        name:   "{{ ilo_package_url }}"
+        state:  present
+    - name: Configure Illumio
+      template:
+        src: runtime_env.yml.j2
+        dest: /etc/illumio-pce/runtime_env.yml
+        owner: root
+        group: root
+        mode: 0644
+    - name: Copy TLS certs for Illumio pce
+      copy:
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - { src: 'tls/pce-oa.netsuite.com.bundle', dest: '/etc/illumio-pce/pce-oa.netsuite.com.bundle' }
+        - { src: 'tls/pce-oa.netsuite.com.key', dest: '/etc/illumio-pce/pce-oa.netsuite.com.key' }
+      notify: Restart Illumio PCE service
+    - name: Create Illumio directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: ilo-pce
+        group: ilo-pce
+        mode: 0700
+      with_items:
+        - /opt/illumio_ephemeral_data
+        - /opt/illumio_ephemeral_data-keys
+        - /opt/illumio_pce_data
+        - /opt/illumio_pce_data/log
+        - /opt/illumio_pce_data/persistent
+        - /opt/illumio_pce_data/runtime
+    - name: Enable Illumio PCE service
+      service:
+        name: illumio-pce
+        state: running
+        enabled: yes
+  handlers:
+    - name: Restart Illumio PCE service
+      service:
+        name: illumio-pce
+        state: restarted
+
+- hosts: data
+  become: true
+  become_user: root
+  vars:
+    ilo_node_type: "{{ ansible_hostname }}"
+  vars_files:
+    - external_variables.yaml
+  tasks:
+    - name: Install Illumio package
+      package:
+        name:   "{{ ilo_package_url }}"
+        state:  present
+    - name: Configure Illumio
+      template:
+        src: runtime_env.yml.j2
+        dest: /etc/illumio-pce/runtime_env.yml
+        owner: root
+        group: root
+        mode: 0644
+    - name: Copy TLS certs for Illumio PCE
+      copy:
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - { src: 'tls/pce-oa.netsuite.com.bundle', dest: '/etc/illumio-pce/pce-oa.netsuite.com.bundle' }
+        - { src: 'tls/pce-oa.netsuite.com.key', dest: '/etc/illumio-pce/pce-oa.netsuite.com.key' }
+      notify: Restart Illumio PCE service
+    - name: Create Illumio directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: ilo-pce
+        group: ilo-pce
+        mode: 0700
+      with_items:
+        - /opt/illumio_ephemeral_data
+        - /opt/illumio_ephemeral_data-keys
+        - /opt/illumio_pce_data
+        - /opt/illumio_pce_data/log
+        - /opt/illumio_pce_data/persistent
+        - /opt/illumio_pce_data/runtime
+    - name: Enable Illumio PCE service
+      service:
+        name: illumio-pce
+        state: running
+        enabled: yes
+  handlers:
+    - name: Restart Illumio PCE service
+      service:
+        name: illumio-pce
+        state: restarted
+
+- hosts: pxb
+  vars_files:
+    - external_variables.yaml
+  tasks:
+    - name: Create Illumio Bootstrap script
+      template:
+        src: illumio-pce-bootstrap.sh.j2
+        dest: ~/ansible/illumio-pce-bootstrap.sh
+        owner: opc
+        group: opc
+        mode: 0644
+    - name: Bootstrap Illumio Cluster
+      command: /bin/bash illumio-pce-bootstrap.sh
+      args:
+        chdir: ansible/
+        creates: illumio-pce-bootstrap.log
+

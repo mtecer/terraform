@@ -1,0 +1,25 @@
+---
+install_root: /opt/illumio-pce
+runtime_data_root: /opt/illumio_pce_data/runtime
+persistent_data_root: /opt/illumio_pce_data/persistent
+ephemeral_data_root: /opt/illumio_ephemeral_data
+log_dir: /opt/illumio_pce_data/log
+private_key_cache_dir: /opt/illumio_ephemeral_data-keys
+pce_fqdn: {{ ilo_pce_fqdn }}
+service_discovery_fqdn: core0.{{ ilo_pce_fqdn }}
+cluster_public_ips:
+  cluster_fqdn:
+    - {{ hostvars['haproxy']['ansible_local']['custom']['network']['public_ip'] }}
+    - {{ hostvars['core0']['ansible_default_ipv4']['address'] }}
+    - {{ hostvars['core1']['ansible_default_ipv4']['address'] }}
+web_service_certificate: /etc/illumio-pce/{{ ilo_pce_fqdn }}.bundle
+web_service_private_key: /etc/illumio-pce/{{ ilo_pce_fqdn }}.key
+service_discovery_encryption_key: 6h09ACGeLksZXkG5OtkcDw==
+email_display_name: 'Central Services'
+ven_repo_url: {{ ilo_package_url }}
+ven_repo_ips:
+  - {{ hostvars['pxb']['ansible_default_ipv4']['address'] }}
+email_address: centralservices@netsuite.com
+smtp_relay_address: {{ hostvars['pxb']['ansible_default_ipv4']['address'] }}:25
+expose_user_invitation_link: true
+node_type: {{ ilo_node_type }}

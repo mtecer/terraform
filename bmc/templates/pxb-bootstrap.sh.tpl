@@ -1,6 +1,5 @@
 #!/bin/bash -x
 
-# Enable root login until next reboot
 cat /home/opc/.ssh/authorized_keys > /root/.ssh/authorized_keys
 
 mkdir /etc/ansible
@@ -23,7 +22,4 @@ chown opc.opc /home/opc/.ssh/config
 
 chmod 0400 /home/opc/.ssh/ansible-key
 chmod 0400 /home/opc/.ssh/config
-
-yum -y install epel-release
-yum -y install ansible ansible-lint
 

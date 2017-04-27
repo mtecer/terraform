@@ -1,4 +1,4 @@
-# Secret environment variables from ~/.terraform_bmc_rc
+# Secret environment variables are sourced from ~/.terraform_bmc_rc
 # source ~/.terraform_bmc_rc
 variable "tenancy_ocid" {}
 variable "user_ocid" {}
@@ -17,4 +17,11 @@ variable "timeout_minutes" {}
 variable "InstanceShape" {}
 variable "InstanceOS" {}
 variable "InstanceOSVersion" {}
-variable "BootStrapFile" {}
+
+variable "ilo_pce_fqdn" {}
+variable "ilo_venrepo_fqdn" {}
+variable "ilo_package" {}
+variable "ilo_admin_user" {}
+variable "ilo_admin_name" {}
+variable "ilo_password" {}
+variable "ilo_organization" {}

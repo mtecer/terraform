@@ -1,0 +1,12 @@
+#!/bin/bash -x
+
+( sleep 60
+
+ssh -t opc@core0 'sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl start --runlevel 1'
+ssh -t opc@core1 'sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl start --runlevel 1'
+ssh -t opc@data1 'sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl start --runlevel 1'
+ssh -t opc@data0 'sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl start --runlevel 1'
+
+ssh -t opc@data0 'sudo -u ilo-pce /opt/illumio-pce/illumio-pce-db-management setup && sudo -u ilo-pce /opt/illumio-pce/illumio-pce-ctl set-runlevel 5'
+
+ssh -t opc@core0 'sudo ILO_PASSWORD="{{ ilo_password }}" -u ilo-pce /opt/illumio-pce/illumio-pce-db-management create-domain --user-name "{{ ilo_admin_user }}" --full-name "{{ ilo_admin_name }}" --org-name "{{ ilo_organization }}"' ) > illumio-pce-bootstrap.log 2>&1

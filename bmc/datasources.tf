@@ -91,12 +91,14 @@ data "baremetal_core_vnic" "ilo-poc-pxb-Vnic" {
 data "template_file" "etc_hosts" {
   template = "${file("${path.module}/templates/etc_hosts.tpl")}"
   vars {
-      ilo-poc-core0   = "${data.baremetal_core_vnic.ilo-poc-core0-Vnic.private_ip_address}"
-      ilo-poc-core1   = "${data.baremetal_core_vnic.ilo-poc-core1-Vnic.private_ip_address}"
-      ilo-poc-data0   = "${data.baremetal_core_vnic.ilo-poc-data0-Vnic.private_ip_address}"
-      ilo-poc-data1   = "${data.baremetal_core_vnic.ilo-poc-data1-Vnic.private_ip_address}"
-      ilo-poc-haproxy = "${data.baremetal_core_vnic.ilo-poc-haproxy-Vnic.private_ip_address}"
-      ilo-poc-pxb     = "${data.baremetal_core_vnic.ilo-poc-pxb-Vnic.private_ip_address}"
+      ilo-poc-core0    = "${data.baremetal_core_vnic.ilo-poc-core0-Vnic.private_ip_address}"
+      ilo-poc-core1    = "${data.baremetal_core_vnic.ilo-poc-core1-Vnic.private_ip_address}"
+      ilo-poc-data0    = "${data.baremetal_core_vnic.ilo-poc-data0-Vnic.private_ip_address}"
+      ilo-poc-data1    = "${data.baremetal_core_vnic.ilo-poc-data1-Vnic.private_ip_address}"
+      ilo-poc-haproxy  = "${data.baremetal_core_vnic.ilo-poc-haproxy-Vnic.private_ip_address}"
+      ilo-poc-pxb      = "${data.baremetal_core_vnic.ilo-poc-pxb-Vnic.private_ip_address}"
+      ilo-poc-pxb-pub  = "${data.baremetal_core_vnic.ilo-poc-pxb-Vnic.public_ip_address}"
+      ilo-venrepo-fqdn = "${var.ilo_venrepo_fqdn}"
   }
 }
 
@@ -116,6 +118,19 @@ data "template_file" "pxb_bootstrap_sh" {
   template = "${file("${path.module}/templates/pxb-bootstrap.sh.tpl")}"
   vars {
       ssh_private_key= "${var.ssh_private_key}"
+  }
+}
+
+data "template_file" "external_variables_yaml" {
+  template = "${file("${path.module}/templates/external_variables.yaml.tpl")}"
+  vars {
+      ilo_pce_fqdn=     "${var.ilo_pce_fqdn}"
+      ilo_venrepo_fqdn= "${var.ilo_venrepo_fqdn}"
+      ilo_package=      "${var.ilo_package}"
+      ilo_admin_user=   "${var.ilo_admin_user}"
+      ilo_admin_name=   "${var.ilo_admin_name}"
+      ilo_password=     "${var.ilo_password}"
+      ilo_organization= "${var.ilo_organization}"
   }
 }
 

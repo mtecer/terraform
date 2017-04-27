@@ -1,0 +1,21 @@
+# {{ ilo_venrepo_fqdn }} HTTPS Virtual Host
+Listen 8443
+LoadModule ssl_module modules/mod_ssl.so
+NameVirtualHost *:8443
+
+<VirtualHost *:8443>
+  DocumentRoot /var/www/html/
+  ServerName {{ ilo_venrepo_fqdn }}:8443
+
+  ErrorLog logs/venrepo-ssl_error_log
+  TransferLog logs/venrepo-ssl_access_log
+  LogLevel warn
+
+  SSLEngine on
+  SSLProtocol all -SSLv2
+  SSLCipherSuite ALL:!ADH:!EXPORT:!SSLv2:RC4+RSA:+HIGH:+MEDIUM:+LOW
+
+  SSLCertificateFile /etc/pki/tls/certs/{{ ilo_venrepo_fqdn }}.bundle
+  SSLCertificateKeyFile /etc/pki/tls/private/{{ ilo_venrepo_fqdn }}.key
+  SSLCACertificateFile /etc/pki/tls/certs/IntermediateCA.crt
+</VirtualHost>

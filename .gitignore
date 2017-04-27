@@ -3,3 +3,7 @@
 *.tfstate.backup
 .terraform
 .idea
+.DS_Store
+keys/
+tls/
+onpremgCBURz8Y4zkGk1u7N9ialjPGlZ.tgz

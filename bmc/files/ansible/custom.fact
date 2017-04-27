@@ -1,0 +1,4 @@
+#!/bin/bash
+PUBLIC_IP=$(curl -s ifconfig.co)
+echo "[network]"
+echo "public_ip=${PUBLIC_IP}"

@@ -6,3 +6,5 @@ ${ilo-poc-data0}    data0
 ${ilo-poc-data1}    data1
 ${ilo-poc-haproxy}    haproxy
 ${ilo-poc-pxb}    pxb
+${ilo-poc-pxb}    ${ilo-venrepo-fqdn}
+
